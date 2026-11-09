@@ -31,7 +31,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextCapitalization
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import com.tecsup.pokemon.domain.model.Pokemon
 import com.tecsup.pokemon.domain.model.UiState
@@ -69,7 +70,7 @@ fun PokemonListScreen(
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Buscar Pokémon") },
                 singleLine = true,
-                textCapitalization = TextCapitalization.Words
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
             )
             Spacer(Modifier.height(12.dp))
             when (state) {
@@ -121,3 +122,5 @@ private fun PokemonCard(
         }
     }
 }
+
+
