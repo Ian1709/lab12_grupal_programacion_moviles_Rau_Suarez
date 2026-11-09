@@ -12,18 +12,20 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.tecsup.pokemon.domain.repository.PokemonRepository
 import com.tecsup.pokemon.ui.catalog.PokemonListScreen
 import com.tecsup.pokemon.ui.detail.PokemonDetailScreen
 import com.tecsup.pokemon.ui.favorites.FavoritesScreen
 import com.tecsup.pokemon.ui.login.LoginScreen
-import com.tecsup.pokemon.ui.viewmodel.PokemonPreviewViewModel
+import com.tecsup.pokemon.ui.viewmodel.PokemonDetailViewModel
+import com.tecsup.pokemon.ui.viewmodel.PokemonListViewModel
+import com.tecsup.pokemon.domain.model.UiState
 
 @Composable
-fun PokemonNavigation() {
+fun PokemonNavigation(repository: PokemonRepository) {
     val navController = rememberNavController()
-    val pokemonViewModel: PokemonPreviewViewModel = viewModel()
+    val pokemonViewModel: PokemonListViewModel = viewModel(factory = PokemonListViewModel.factory(repository))
     val items by pokemonViewModel.items.collectAsStateWithLifecycle()
-    val detail by pokemonViewModel.selected.collectAsStateWithLifecycle()
     val favorites by pokemonViewModel.favorites.collectAsStateWithLifecycle()
     var loginAttempted by rememberSaveable { mutableStateOf(false) }
 
@@ -39,25 +41,35 @@ fun PokemonNavigation() {
         composable("catalog") {
             PokemonListScreen(
                 state = items,
-                onSelectPokemon = { pokemonViewModel.select(it); navController.navigate("detail/${it.id}") },
+                onSelectPokemon = { navController.navigate("detail/${it.id}/${it.name}") },
                 onToggleFavorite = pokemonViewModel::toggleFavorite,
                 onOpenFavorites = { navController.navigate("favorites") },
-                onRetry = { }
+                onRetry = { pokemonViewModel.synchronize() }
             )
         }
-        composable("detail/{pokemonId}", arguments = listOf(navArgument("pokemonId") { type = NavType.IntType })) {
+        composable("detail/{pokemonId}/{pokemonName}", arguments = listOf(
+            navArgument("pokemonId") { type = NavType.IntType },
+            navArgument("pokemonName") { type = NavType.StringType }
+        )) { entry ->
+            val pokemonId = entry.arguments?.getInt("pokemonId") ?: 0
+            val pokemonName = entry.arguments?.getString("pokemonName").orEmpty()
+            val detailViewModel: PokemonDetailViewModel = viewModel(
+                key = "pokemon-detail-$pokemonId",
+                factory = PokemonDetailViewModel.factory(repository, pokemonId, pokemonName)
+            )
+            val detail by detailViewModel.state.collectAsStateWithLifecycle()
             PokemonDetailScreen(
                 state = detail,
                 onBack = { navController.popBackStack() },
                 onToggleFavorite = pokemonViewModel::toggleFavorite,
-                onRetry = { }
+                onRetry = detailViewModel::retry
             )
         }
         composable("favorites") {
             FavoritesScreen(
-                favorites = favorites,
+                favorites = (favorites as? UiState.Success)?.data.orEmpty(),
                 onBack = { navController.popBackStack() },
-                onSelectPokemon = { pokemonViewModel.select(it); navController.navigate("detail/${it.id}") },
+                onSelectPokemon = { navController.navigate("detail/${it.id}/${it.name}") },
                 onRemoveFavorite = pokemonViewModel::toggleFavorite
             )
         }
