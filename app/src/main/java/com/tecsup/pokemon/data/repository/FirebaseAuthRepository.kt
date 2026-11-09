@@ -16,7 +16,12 @@ class FirebaseAuthRepository(context: Context) : AuthRepository {
 
     override suspend fun currentSession(): UserSession? {
         val user = auth?.currentUser ?: return null
-        return user.toSession()
+        return try {
+            user.toSession()
+        } catch (error: Throwable) {
+            auth?.signOut()
+            throw error
+        }
     }
 
     override suspend fun signIn(email: String, password: String): UserSession {
@@ -25,7 +30,12 @@ class FirebaseAuthRepository(context: Context) : AuthRepository {
         }
         val result = firebaseAuth.signInWithEmailAndPassword(email.trim(), password).await()
         val user = requireNotNull(result.user) { "Firebase no devolvió el usuario autenticado." }
-        return user.toSession()
+        return try {
+            user.toSession()
+        } catch (error: Throwable) {
+            firebaseAuth.signOut()
+            throw error
+        }
     }
 
     override suspend fun signOut() {

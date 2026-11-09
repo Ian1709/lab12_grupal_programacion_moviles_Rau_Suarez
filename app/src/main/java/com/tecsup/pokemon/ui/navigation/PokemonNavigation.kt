@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.tecsup.pokemon.domain.repository.PokemonRepository
 import com.tecsup.pokemon.domain.repository.AuthRepository
+import com.tecsup.pokemon.domain.repository.SyncNotifier
 import com.tecsup.pokemon.ui.catalog.PokemonListScreen
 import com.tecsup.pokemon.ui.detail.PokemonDetailScreen
 import com.tecsup.pokemon.ui.favorites.FavoritesScreen
@@ -19,10 +20,17 @@ import com.tecsup.pokemon.ui.login.LoginScreen
 import com.tecsup.pokemon.ui.viewmodel.PokemonDetailViewModel
 import com.tecsup.pokemon.ui.viewmodel.PokemonListViewModel
 import com.tecsup.pokemon.ui.viewmodel.AuthViewModel
+import com.tecsup.pokemon.ui.viewmodel.AdminViewModel
+import com.tecsup.pokemon.ui.admin.AdminPanelScreen
 import com.tecsup.pokemon.domain.model.UiState
 
 @Composable
-fun PokemonNavigation(repository: PokemonRepository, networkMonitor: com.tecsup.pokemon.domain.repository.NetworkMonitor, authRepository: AuthRepository) {
+fun PokemonNavigation(
+    repository: PokemonRepository,
+    networkMonitor: com.tecsup.pokemon.domain.repository.NetworkMonitor,
+    authRepository: AuthRepository,
+    syncNotifier: SyncNotifier
+) {
     val navController = rememberNavController()
     val pokemonViewModel: PokemonListViewModel = viewModel(factory = PokemonListViewModel.factory(repository, networkMonitor))
     val authViewModel: AuthViewModel = viewModel(factory = AuthViewModel.factory(authRepository))
@@ -30,6 +38,7 @@ fun PokemonNavigation(repository: PokemonRepository, networkMonitor: com.tecsup.
     val items by pokemonViewModel.items.collectAsStateWithLifecycle()
     val favorites by pokemonViewModel.favorites.collectAsStateWithLifecycle()
     val isOffline by pokemonViewModel.isOffline.collectAsStateWithLifecycle()
+    val currentUser = (session as? UiState.Success)?.data
 
     LaunchedEffect(session) {
         if (session is UiState.Success) {
@@ -37,7 +46,7 @@ fun PokemonNavigation(repository: PokemonRepository, networkMonitor: com.tecsup.
             if (user != null) navController.navigate("catalog") { popUpTo("login") { inclusive = true }; launchSingleTop = true }
             else if (navController.currentDestination?.route != "login") {
                 navController.navigate("login") {
-                    popUpTo(navController.graph.id) { inclusive = true }
+                    popUpTo("catalog") { inclusive = true }
                     launchSingleTop = true
                 }
             }
@@ -60,7 +69,9 @@ fun PokemonNavigation(repository: PokemonRepository, networkMonitor: com.tecsup.
                 onOpenFavorites = { navController.navigate("favorites") },
                 onRetry = { pokemonViewModel.synchronize() },
                 isOffline = isOffline,
-                onLogout = authViewModel::signOut
+                onLogout = authViewModel::signOut,
+                isAdmin = currentUser?.role == "admin",
+                onOpenAdmin = { if (currentUser?.role == "admin") navController.navigate("admin") }
             )
         }
         composable("detail/{pokemonId}/{pokemonName}", arguments = listOf(
@@ -88,6 +99,28 @@ fun PokemonNavigation(repository: PokemonRepository, networkMonitor: com.tecsup.
                 onSelectPokemon = { navController.navigate("detail/${it.id}/${it.name}") },
                 onRemoveFavorite = pokemonViewModel::toggleFavorite
             )
+        }
+        composable("admin") {
+            if (currentUser?.role != "admin") {
+                LaunchedEffect(Unit) {
+                    navController.navigate("catalog") { popUpTo("admin") { inclusive = true } }
+                }
+            } else {
+                val adminViewModel: AdminViewModel = viewModel(
+                    factory = AdminViewModel.factory(repository, syncNotifier)
+                )
+                val stats by adminViewModel.stats.collectAsStateWithLifecycle()
+                val isSyncing by adminViewModel.isSyncing.collectAsStateWithLifecycle()
+                val message by adminViewModel.message.collectAsStateWithLifecycle()
+                AdminPanelScreen(
+                    stats = stats,
+                    isSyncing = isSyncing,
+                    message = message,
+                    onBack = { navController.popBackStack() },
+                    onSynchronize = adminViewModel::synchronize,
+                    onClearCache = adminViewModel::clearCache
+                )
+            }
         }
     }
 }

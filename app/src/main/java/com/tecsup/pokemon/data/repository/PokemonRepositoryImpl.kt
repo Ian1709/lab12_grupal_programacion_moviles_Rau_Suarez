@@ -5,9 +5,11 @@ import com.tecsup.pokemon.data.mapper.toDomain
 import com.tecsup.pokemon.data.mapper.toEntity
 import com.tecsup.pokemon.data.remote.PokemonApiService
 import com.tecsup.pokemon.domain.model.Pokemon
+import com.tecsup.pokemon.domain.model.PokemonStats
 import com.tecsup.pokemon.domain.repository.PokemonRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 
 class PokemonRepositoryImpl(
     private val dao: PokemonDao,
@@ -18,6 +20,10 @@ class PokemonRepositoryImpl(
     override fun observeFavorites(): Flow<List<Pokemon>> = dao.observeFavorites().map { rows -> rows.map { it.toDomain() } }
 
     override fun observePokemon(id: Int): Flow<Pokemon?> = dao.observeById(id).map { it?.toDomain() }
+
+    override fun observeStats(): Flow<PokemonStats> = combine(
+        dao.observeCount(), dao.observeFavoriteCount()
+    ) { total, favorites -> PokemonStats(total, favorites) }
 
     override suspend fun synchronize(type: String) {
         val response = api.getPokemonByType(type)

@@ -10,6 +10,11 @@ data class Pokemon(
     val isFavorite: Boolean = false
 )
 
+data class PokemonStats(
+    val total: Int,
+    val favorites: Int
+)
+
 sealed interface UiState<out T> {
     data object Loading : UiState<Nothing>
     data class Success<T>(val data: T) : UiState<T>

@@ -3,6 +3,7 @@ package com.tecsup.pokemon.data
 import android.content.Context
 import com.tecsup.pokemon.data.local.PokemonDatabase
 import com.tecsup.pokemon.data.network.AndroidNetworkMonitor
+import com.tecsup.pokemon.data.notification.AndroidSyncNotifier
 import com.tecsup.pokemon.data.remote.PokemonApiService
 import com.tecsup.pokemon.data.repository.FirebaseAuthRepository
 import com.tecsup.pokemon.data.repository.PokemonRepositoryImpl
@@ -13,4 +14,5 @@ class PokemonAppContainer(context: Context) {
     val pokemonRepository: PokemonRepository = PokemonRepositoryImpl(database.pokemonDao(), PokemonApiService.create())
     val networkMonitor = AndroidNetworkMonitor(context.applicationContext)
     val authRepository = FirebaseAuthRepository(context.applicationContext)
+    val syncNotifier = AndroidSyncNotifier(context.applicationContext)
 }

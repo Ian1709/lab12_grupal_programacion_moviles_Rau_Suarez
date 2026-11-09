@@ -50,6 +50,8 @@ fun PokemonListScreen(
     onRetry: () -> Unit,
     isOffline: Boolean = false,
     onLogout: () -> Unit = {},
+    isAdmin: Boolean = false,
+    onOpenAdmin: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var query by rememberSaveable { mutableStateOf("") }
@@ -65,6 +67,7 @@ fun PokemonListScreen(
             }
             Row {
                 TextButton(onClick = onOpenFavorites) { Text("♥ Favoritos") }
+                if (isAdmin) TextButton(onClick = onOpenAdmin) { Text("Admin") }
                 TextButton(onClick = onLogout) { Text("Salir") }
             }
         }
