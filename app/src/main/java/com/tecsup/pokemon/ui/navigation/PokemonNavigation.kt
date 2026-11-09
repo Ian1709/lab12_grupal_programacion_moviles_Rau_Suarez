@@ -22,11 +22,12 @@ import com.tecsup.pokemon.ui.viewmodel.PokemonListViewModel
 import com.tecsup.pokemon.domain.model.UiState
 
 @Composable
-fun PokemonNavigation(repository: PokemonRepository) {
+fun PokemonNavigation(repository: PokemonRepository, networkMonitor: com.tecsup.pokemon.domain.repository.NetworkMonitor) {
     val navController = rememberNavController()
-    val pokemonViewModel: PokemonListViewModel = viewModel(factory = PokemonListViewModel.factory(repository))
+    val pokemonViewModel: PokemonListViewModel = viewModel(factory = PokemonListViewModel.factory(repository, networkMonitor))
     val items by pokemonViewModel.items.collectAsStateWithLifecycle()
     val favorites by pokemonViewModel.favorites.collectAsStateWithLifecycle()
+    val isOffline by pokemonViewModel.isOffline.collectAsStateWithLifecycle()
     var loginAttempted by rememberSaveable { mutableStateOf(false) }
 
     NavHost(navController = navController, startDestination = "login") {
@@ -44,7 +45,8 @@ fun PokemonNavigation(repository: PokemonRepository) {
                 onSelectPokemon = { navController.navigate("detail/${it.id}/${it.name}") },
                 onToggleFavorite = pokemonViewModel::toggleFavorite,
                 onOpenFavorites = { navController.navigate("favorites") },
-                onRetry = { pokemonViewModel.synchronize() }
+                onRetry = { pokemonViewModel.synchronize() },
+                isOffline = isOffline
             )
         }
         composable("detail/{pokemonId}/{pokemonName}", arguments = listOf(

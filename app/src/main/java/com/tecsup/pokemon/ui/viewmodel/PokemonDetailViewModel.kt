@@ -44,7 +44,11 @@ class PokemonDetailViewModel(
             _state.value = UiState.Loading
             runCatching { repository.loadDetails(name) }
                 .onSuccess { _state.value = UiState.Success(it) }
-                .onFailure { _state.value = UiState.Error(it.message ?: "No se pudo cargar el detalle.") }
+                .onFailure {
+                    if (_state.value !is UiState.Success) {
+                        _state.value = UiState.Error(it.message ?: "No se pudo cargar el detalle.")
+                    }
+                }
         }
     }
 

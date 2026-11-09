@@ -48,6 +48,7 @@ fun PokemonListScreen(
     onToggleFavorite: (Pokemon) -> Unit,
     onOpenFavorites: () -> Unit,
     onRetry: () -> Unit,
+    isOffline: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     var query by rememberSaveable { mutableStateOf("") }
@@ -74,6 +75,14 @@ fun PokemonListScreen(
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
             )
             Spacer(Modifier.height(12.dp))
+            if (isOffline) {
+                Text(
+                    "Sin conexión: mostrando los datos guardados en este dispositivo.",
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                    color = MaterialTheme.colorScheme.secondary,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
             when (state) {
                 UiState.Loading -> LoadingPanel(Modifier.weight(1f))
                 is UiState.Error -> ErrorPanel(state.message, onRetry, Modifier.weight(1f))
