@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.tecsup.pokemon.ui.components.PokemonArtwork
 import com.tecsup.pokemon.domain.model.Pokemon
 import com.tecsup.pokemon.domain.model.UiState
 import com.tecsup.pokemon.ui.components.ErrorPanel
@@ -47,12 +48,7 @@ fun PokemonDetailScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Box(
-                        Modifier.size(190.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = .16f), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(pokemon.name.take(1).uppercase(), style = MaterialTheme.typography.displayLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Black)
-                    }
+                    PokemonArtwork(pokemon, Modifier.size(190.dp))
                     Spacer(Modifier.height(18.dp))
                     Text("#${pokemon.id.toString().padStart(3, '0')}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(pokemon.name.replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Black)
@@ -81,3 +77,5 @@ private fun StatCard(label: String, value: String, modifier: Modifier = Modifier
         }
     }
 }
+
+

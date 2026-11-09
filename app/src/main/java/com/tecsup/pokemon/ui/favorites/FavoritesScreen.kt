@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tecsup.pokemon.domain.model.Pokemon
 import com.tecsup.pokemon.ui.components.EmptyPanel
+import com.tecsup.pokemon.ui.components.PokemonArtwork
 
 @Composable
 fun FavoritesScreen(
@@ -45,9 +46,7 @@ fun FavoritesScreen(
                 items(favorites, key = { it.id }) { pokemon ->
                     Card(Modifier.fillMaxWidth().clickable { onSelectPokemon(pokemon) }) {
                         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Box(Modifier.size(54.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = .16f), CircleShape), contentAlignment = Alignment.Center) {
-                                Text(pokemon.name.take(1).uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                            }
+                            PokemonArtwork(pokemon, Modifier.size(54.dp))
                             Column(Modifier.weight(1f)) {
                                 Text("#${pokemon.id.toString().padStart(3, '0')}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Text(pokemon.name.replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
@@ -60,3 +59,5 @@ fun FavoritesScreen(
         }
     }
 }
+
+

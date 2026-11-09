@@ -39,6 +39,7 @@ import com.tecsup.pokemon.domain.model.UiState
 import com.tecsup.pokemon.ui.components.EmptyPanel
 import com.tecsup.pokemon.ui.components.ErrorPanel
 import com.tecsup.pokemon.ui.components.LoadingPanel
+import com.tecsup.pokemon.ui.components.PokemonArtwork
 
 @Composable
 fun PokemonListScreen(
@@ -105,12 +106,7 @@ private fun PokemonCard(
         shape = RoundedCornerShape(20.dp)
     ) {
         Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            Box(
-                modifier = Modifier.size(72.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = .18f), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(pokemon.name.firstOrNull()?.uppercase() ?: "?", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Black)
-            }
+            PokemonArtwork(pokemon, Modifier.size(72.dp))
             Column(Modifier.weight(1f)) {
                 Text("#${pokemon.id.toString().padStart(3, '0')}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(pokemon.name.replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
@@ -122,5 +118,7 @@ private fun PokemonCard(
         }
     }
 }
+
+
 
 
