@@ -49,6 +49,7 @@ fun PokemonListScreen(
     onOpenFavorites: () -> Unit,
     onRetry: () -> Unit,
     isOffline: Boolean = false,
+    onLogout: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var query by rememberSaveable { mutableStateOf("") }
@@ -62,7 +63,10 @@ fun PokemonListScreen(
                 Text("POKÉDEX", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                 Text("Tipo fuego", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             }
-            TextButton(onClick = onOpenFavorites) { Text("♥ Favoritos") }
+            Row {
+                TextButton(onClick = onOpenFavorites) { Text("♥ Favoritos") }
+                TextButton(onClick = onLogout) { Text("Salir") }
+            }
         }
     }) { insets ->
         Column(Modifier.fillMaxSize().padding(insets).padding(horizontal = 16.dp)) {

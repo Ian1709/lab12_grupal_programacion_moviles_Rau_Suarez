@@ -11,6 +11,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val container = PokemonAppContainer(applicationContext)
-        setContent { PokemonTheme { PokemonNavigation(container.pokemonRepository, container.networkMonitor) } }
+        setContent { PokemonTheme { PokemonNavigation(container.pokemonRepository, container.networkMonitor, container.authRepository) } }
     }
 }

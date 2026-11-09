@@ -32,7 +32,7 @@ fun LoginScreen(
     isLoading: Boolean,
     errorMessage: String?,
     onLogin: (email: String, password: String) -> Unit,
-    onContinueAsGuest: () -> Unit,
+    onContinueAsGuest: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var email by rememberSaveable { mutableStateOf("") }
@@ -92,8 +92,10 @@ fun LoginScreen(
             if (isLoading) CircularProgressIndicator(Modifier.height(20.dp), strokeWidth = 2.dp)
             else Text("Iniciar sesión")
         }
-        TextButton(onClick = onContinueAsGuest, enabled = !isLoading) {
-            Text("Explorar catálogo de demostración")
+        if (onContinueAsGuest != null) {
+            TextButton(onClick = onContinueAsGuest, enabled = !isLoading) {
+                Text("Explorar catálogo de demostración")
+            }
         }
     }
 }
