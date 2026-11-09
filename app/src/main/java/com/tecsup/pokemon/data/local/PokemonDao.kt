@@ -33,14 +33,19 @@ interface PokemonDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(entities: List<PokemonEntity>)
 
+    @Query("DELETE FROM pokemon WHERE isFavorite = 0 AND id NOT IN (:ids)")
+    suspend fun deleteUnlistedNonFavorites(ids: List<Int>)
+
     @Transaction
     suspend fun replaceCatalog(entities: List<PokemonEntity>) {
+        if (entities.isEmpty()) return
         val favoriteIds = entities.mapNotNull { entity ->
             if (getById(entity.id)?.isFavorite == true) entity.id else null
         }.toSet()
         val merged = entities.map { entity ->
             entity.copy(isFavorite = entity.id in favoriteIds)
         }
+        deleteUnlistedNonFavorites(merged.map(PokemonEntity::id))
         upsertAll(merged)
     }
 
