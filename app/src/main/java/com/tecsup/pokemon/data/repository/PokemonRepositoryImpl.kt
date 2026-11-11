@@ -26,10 +26,11 @@ class PokemonRepositoryImpl(
         dao.observeCount(), dao.observeFavoriteCount()
     ) { total, favorites -> PokemonStats(total, favorites) }
 
-    override suspend fun synchronize(type: String) {
+    override suspend fun synchronize(type: String): Int {
         val response = api.getPokemonByType(type)
         val catalog = response.pokemon.map { it.pokemon.toEntity() }
         dao.replaceCatalog(catalog)
+        return catalog.size
     }
 
     override suspend fun loadDetails(name: String): Pokemon {
@@ -46,6 +47,6 @@ class PokemonRepositoryImpl(
     }
 
     override suspend fun clearCache() {
-        dao.clearNonFavoriteCache()
+        dao.clearAll()
     }
 }

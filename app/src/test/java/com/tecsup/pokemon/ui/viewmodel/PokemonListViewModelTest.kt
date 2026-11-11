@@ -5,6 +5,7 @@ import com.tecsup.pokemon.domain.model.PokemonStats
 import com.tecsup.pokemon.domain.model.UiState
 import com.tecsup.pokemon.domain.repository.NetworkMonitor
 import com.tecsup.pokemon.domain.repository.PokemonRepository
+import com.tecsup.pokemon.domain.repository.SyncNotifier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,14 +25,14 @@ class PokemonListViewModelTest {
     @Test fun `muestra elementos emitidos desde el repositorio local`() = runTest {
         val pokemon = Pokemon(id = 4, name = "charmander")
         val repository = FakePokemonRepository(items = listOf(pokemon))
-        val viewModel = PokemonListViewModel(repository, FakeNetworkMonitor(online = true))
+        val viewModel = PokemonListViewModel(repository, FakeNetworkMonitor(online = true), FakeSyncNotifier)
         advanceUntilIdle()
 
         assertEquals(UiState.Success(listOf(pokemon)), viewModel.items.value)
     }
 
     @Test fun `muestra error reintentable cuando no hay red ni datos`() = runTest {
-        val viewModel = PokemonListViewModel(FakePokemonRepository(), FakeNetworkMonitor(online = false))
+        val viewModel = PokemonListViewModel(FakePokemonRepository(), FakeNetworkMonitor(online = false), FakeSyncNotifier)
         advanceUntilIdle()
 
         assertTrue(viewModel.items.value is UiState.Error)
@@ -40,7 +41,7 @@ class PokemonListViewModelTest {
     @Test fun `alternar favorito delega el cambio al repositorio`() = runTest {
         val pokemon = Pokemon(id = 4, name = "charmander")
         val repository = FakePokemonRepository(items = listOf(pokemon))
-        val viewModel = PokemonListViewModel(repository, FakeNetworkMonitor(online = false))
+        val viewModel = PokemonListViewModel(repository, FakeNetworkMonitor(online = false), FakeSyncNotifier)
         advanceUntilIdle()
 
         viewModel.toggleFavorite(pokemon)
@@ -61,9 +62,13 @@ private class FakePokemonRepository(items: List<Pokemon> = emptyList()) : Pokemo
     override fun observeFavorites(): Flow<List<Pokemon>> = flowOf(initialItems.filter(Pokemon::isFavorite))
     override fun observePokemon(id: Int): Flow<Pokemon?> = flowOf(initialItems.firstOrNull { it.id == id })
     override fun observeStats(): Flow<PokemonStats> = flowOf(PokemonStats(initialItems.size, initialItems.count(Pokemon::isFavorite)))
-    override suspend fun synchronize(type: String) = Unit
+    override suspend fun synchronize(type: String): Int = catalog.value.size
     override suspend fun loadDetails(name: String): Pokemon = error("Not used in this test")
     var lastFavoriteChange: Pair<Int, Boolean>? = null
     override suspend fun setFavorite(id: Int, favorite: Boolean) { lastFavoriteChange = id to favorite }
     override suspend fun clearCache() { catalog.value = emptyList() }
+}
+
+private object FakeSyncNotifier : SyncNotifier {
+    override fun notifySyncComplete(savedCount: Int) = Unit
 }

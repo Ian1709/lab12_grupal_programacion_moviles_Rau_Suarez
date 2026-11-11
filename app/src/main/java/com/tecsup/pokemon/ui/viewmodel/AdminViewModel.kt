@@ -39,9 +39,9 @@ class AdminViewModel(
             _isSyncing.value = true
             _message.value = null
             runCatching { repository.synchronize() }
-                .onSuccess {
-                    notifier.notifySyncComplete()
-                    _message.value = "Sincronización completada."
+                .onSuccess { count ->
+                    notifier.notifySyncComplete(count)
+                    _message.value = "Sincronización completada: $count Pokémon guardados."
                 }
                 .onFailure { _message.value = it.message ?: "No se pudo sincronizar el catálogo." }
             _isSyncing.value = false
@@ -51,7 +51,7 @@ class AdminViewModel(
     fun clearCache() {
         viewModelScope.launch {
             runCatching { repository.clearCache() }
-                .onSuccess { _message.value = "Caché limpiada. Los favoritos se conservaron." }
+                .onSuccess { _message.value = "Caché y favoritos locales eliminados." }
                 .onFailure { _message.value = it.message ?: "No se pudo limpiar la caché." }
         }
     }

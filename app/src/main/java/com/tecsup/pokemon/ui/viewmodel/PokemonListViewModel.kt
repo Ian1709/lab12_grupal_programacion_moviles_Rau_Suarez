@@ -6,6 +6,7 @@ import com.tecsup.pokemon.domain.model.Pokemon
 import com.tecsup.pokemon.domain.model.UiState
 import com.tecsup.pokemon.domain.repository.PokemonRepository
 import com.tecsup.pokemon.domain.repository.NetworkMonitor
+import com.tecsup.pokemon.domain.repository.SyncNotifier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,7 +15,8 @@ import kotlinx.coroutines.launch
 
 class PokemonListViewModel(
     private val repository: PokemonRepository,
-    private val networkMonitor: NetworkMonitor
+    private val networkMonitor: NetworkMonitor,
+    private val notifier: SyncNotifier
 ) : ViewModel() {
     private val _items = MutableStateFlow<UiState<List<Pokemon>>>(UiState.Loading)
     val items: StateFlow<UiState<List<Pokemon>>> = _items.asStateFlow()
@@ -24,15 +26,19 @@ class PokemonListViewModel(
 
     private val _isOffline = MutableStateFlow(!networkMonitor.isOnline.value)
     val isOffline: StateFlow<Boolean> = _isOffline.asStateFlow()
+    private var hasCompletedFirstSync = false
 
     init {
         viewModelScope.launch {
             repository.observePokemon().catch { error ->
                 _items.value = UiState.Error(error.message ?: "No se pudo leer el catálogo local.")
             }.collect { rows ->
-                _items.value = if (rows.isEmpty() && !networkMonitor.isOnline.value) {
-                    UiState.Error("Sin conexión y no hay datos guardados.")
-                } else UiState.Success(rows)
+                _items.value = when {
+                    rows.isNotEmpty() -> UiState.Success(rows)
+                    !networkMonitor.isOnline.value -> UiState.Error("Sin conexión y no hay datos guardados.")
+                    hasCompletedFirstSync -> UiState.Success(emptyList())
+                    else -> UiState.Loading
+                }
             }
         }
         viewModelScope.launch {
@@ -62,8 +68,14 @@ class PokemonListViewModel(
         }
         viewModelScope.launch {
             runCatching { repository.synchronize() }
-                .onSuccess { onComplete?.invoke() }
+                .onSuccess { count ->
+                    hasCompletedFirstSync = true
+                    notifier.notifySyncComplete(count)
+                    if (_items.value is UiState.Loading && count == 0) _items.value = UiState.Success(emptyList())
+                    onComplete?.invoke()
+                }
                 .onFailure {
+                    hasCompletedFirstSync = true
                     showOfflineIfEmpty(it.message ?: "No se pudo sincronizar.")
                     onError?.invoke(it)
                 }
@@ -80,9 +92,9 @@ class PokemonListViewModel(
     }
 
     companion object {
-        fun factory(repository: PokemonRepository, networkMonitor: NetworkMonitor) = object : androidx.lifecycle.ViewModelProvider.Factory {
+        fun factory(repository: PokemonRepository, networkMonitor: NetworkMonitor, notifier: SyncNotifier) = object : androidx.lifecycle.ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T = PokemonListViewModel(repository, networkMonitor) as T
+            override fun <T : ViewModel> create(modelClass: Class<T>): T = PokemonListViewModel(repository, networkMonitor, notifier) as T
         }
     }
 }

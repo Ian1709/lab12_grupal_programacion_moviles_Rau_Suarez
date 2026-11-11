@@ -52,6 +52,6 @@ interface PokemonDao {
     @Query("UPDATE pokemon SET isFavorite = :favorite WHERE id = :id")
     suspend fun setFavorite(id: Int, favorite: Boolean)
 
-    @Query("DELETE FROM pokemon WHERE isFavorite = 0")
-    suspend fun clearNonFavoriteCache()
+    @Query("DELETE FROM pokemon")
+    suspend fun clearAll()
 }

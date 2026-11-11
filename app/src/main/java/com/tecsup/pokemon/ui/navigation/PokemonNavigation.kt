@@ -1,10 +1,17 @@
 package com.tecsup.pokemon.ui.navigation
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,13 +40,23 @@ fun PokemonNavigation(
     syncNotifier: SyncNotifier
 ) {
     val navController = rememberNavController()
-    val pokemonViewModel: PokemonListViewModel = viewModel(factory = PokemonListViewModel.factory(repository, networkMonitor))
+    val pokemonViewModel: PokemonListViewModel = viewModel(factory = PokemonListViewModel.factory(repository, networkMonitor, syncNotifier))
     val authViewModel: AuthViewModel = viewModel(factory = AuthViewModel.factory(authRepository))
     val session by authViewModel.session.collectAsStateWithLifecycle()
     val items by pokemonViewModel.items.collectAsStateWithLifecycle()
     val favorites by pokemonViewModel.favorites.collectAsStateWithLifecycle()
     val isOffline by pokemonViewModel.isOffline.collectAsStateWithLifecycle()
     val currentUser = (session as? UiState.Success)?.data
+    val context = LocalContext.current
+    val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) pokemonViewModel.synchronize()
+    }
+
+    LaunchedEffect(currentUser?.uid) {
+        if (currentUser != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
 
     LaunchedEffect(session) {
         if (session is UiState.Success) {
