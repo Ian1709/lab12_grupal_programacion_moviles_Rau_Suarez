@@ -52,22 +52,22 @@ fun PokemonListScreen(
     onLogout: () -> Unit = {},
     isAdmin: Boolean = false,
     onOpenAdmin: () -> Unit = {},
+    onOpenProfile: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     Scaffold(modifier = modifier, topBar = {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
-                Text("POKÉDEX", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                Text("Tipo fuego", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp)) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Column {
+                    Text("POKÉDEX", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                    Text("Tipo fuego", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                }
+                TextButton(onClick = onOpenProfile) { Text("◉  Perfil") }
             }
-            Row {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                 TextButton(onClick = onOpenFavorites) { Text("♥ Favoritos") }
-                if (isAdmin) TextButton(onClick = onOpenAdmin) { Text("Admin") }
+                if (isAdmin) TextButton(onClick = onOpenAdmin) { Text("Panel admin") }
                 TextButton(onClick = onLogout) { Text("Salir") }
             }
         }

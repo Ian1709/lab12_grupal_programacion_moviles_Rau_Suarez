@@ -22,6 +22,7 @@ import com.tecsup.pokemon.ui.viewmodel.PokemonListViewModel
 import com.tecsup.pokemon.ui.viewmodel.AuthViewModel
 import com.tecsup.pokemon.ui.viewmodel.AdminViewModel
 import com.tecsup.pokemon.ui.admin.AdminPanelScreen
+import com.tecsup.pokemon.ui.profile.ProfileScreen
 import com.tecsup.pokemon.domain.model.UiState
 
 @Composable
@@ -71,7 +72,8 @@ fun PokemonNavigation(
                 isOffline = isOffline,
                 onLogout = authViewModel::signOut,
                 isAdmin = currentUser?.role == "admin",
-                onOpenAdmin = { if (currentUser?.role == "admin") navController.navigate("admin") }
+                onOpenAdmin = { if (currentUser?.role == "admin") navController.navigate("admin") },
+                onOpenProfile = { navController.navigate("profile") }
             )
         }
         composable("detail/{pokemonId}/{pokemonName}", arguments = listOf(
@@ -99,6 +101,21 @@ fun PokemonNavigation(
                 onSelectPokemon = { navController.navigate("detail/${it.id}/${it.name}") },
                 onRemoveFavorite = pokemonViewModel::toggleFavorite
             )
+        }
+        composable("profile") {
+            val user = currentUser
+            if (user == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate("login") { popUpTo("profile") { inclusive = true } }
+                }
+            } else {
+                ProfileScreen(
+                    session = user,
+                    onBack = { navController.popBackStack() },
+                    onOpenAdmin = { if (user.role == "admin") navController.navigate("admin") },
+                    onSignOut = authViewModel::signOut
+                )
+            }
         }
         composable("admin") {
             if (currentUser?.role != "admin") {
