@@ -7,5 +7,5 @@ interface AuthRepository {
     suspend fun signIn(email: String, password: String): UserSession
     suspend fun signUp(displayName: String, email: String, password: String): UserSession
     suspend fun signOut()
-    suspend fun updateProfilePhoto(photoUri: String)
+    suspend fun updateProfilePhoto(photoUri: String): String
 }

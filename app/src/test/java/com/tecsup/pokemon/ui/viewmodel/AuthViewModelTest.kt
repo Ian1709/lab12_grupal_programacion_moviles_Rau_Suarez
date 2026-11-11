@@ -52,5 +52,5 @@ private class FakeAuthRepository : AuthRepository {
         return UserSession(uid = "test-uid", email = email, role = "usuario", displayName = displayName)
     }
     override suspend fun signOut() = Unit
-    override suspend fun updateProfilePhoto(photoUri: String) = Unit
+    override suspend fun updateProfilePhoto(photoUri: String): String = photoUri
 }

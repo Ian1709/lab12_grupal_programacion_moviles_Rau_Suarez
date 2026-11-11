@@ -3,6 +3,7 @@ package com.tecsup.pokemon.ui.navigation
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -44,6 +45,7 @@ fun PokemonNavigation(
     val pokemonViewModel: PokemonListViewModel = viewModel(factory = PokemonListViewModel.factory(repository, networkMonitor, syncNotifier))
     val authViewModel: AuthViewModel = viewModel(factory = AuthViewModel.factory(authRepository))
     val session by authViewModel.session.collectAsStateWithLifecycle()
+    val photoMessage by authViewModel.photoMessage.collectAsStateWithLifecycle()
     val items by pokemonViewModel.items.collectAsStateWithLifecycle()
     val favorites by pokemonViewModel.favorites.collectAsStateWithLifecycle()
     val isOffline by pokemonViewModel.isOffline.collectAsStateWithLifecycle()
@@ -51,6 +53,11 @@ fun PokemonNavigation(
     val currentUser = (session as? UiState.Success)?.data
     val context = LocalContext.current
     val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    val profilePhotoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        uri?.let { selectedPhoto ->
+            authViewModel.updateProfilePhoto(selectedPhoto.toString())
+        }
+    }
 
     LaunchedEffect(currentUser?.uid) {
         if (currentUser != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -134,7 +141,11 @@ fun PokemonNavigation(
                     session = user,
                     onBack = { navController.popBackStack() },
                     onOpenAdmin = { if (user.role == "admin") navController.navigate("admin") },
-                    onSignOut = authViewModel::signOut
+                    onSignOut = authViewModel::signOut,
+                    photoMessage = photoMessage,
+                    onPickPhoto = {
+                        profilePhotoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    }
                 )
             }
         }

@@ -14,6 +14,9 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
     private val _session = MutableStateFlow<UiState<UserSession?>>(UiState.Loading)
     val session: StateFlow<UiState<UserSession?>> = _session.asStateFlow()
 
+    private val _photoMessage = MutableStateFlow<String?>(null)
+    val photoMessage: StateFlow<String?> = _photoMessage.asStateFlow()
+
     init {
         viewModelScope.launch {
             runCatching { repository.currentSession() }
@@ -51,8 +54,13 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
     fun updateProfilePhoto(photoUri: String) {
         viewModelScope.launch {
             val current = (_session.value as? UiState.Success)?.data ?: return@launch
+            _photoMessage.value = null
             runCatching { repository.updateProfilePhoto(photoUri) }
-                .onSuccess { _session.value = UiState.Success(current.copy(photoUri = photoUri)) }
+                .onSuccess { savedUri ->
+                    _session.value = UiState.Success(current.copy(photoUri = savedUri))
+                    _photoMessage.value = "Foto de perfil actualizada en este dispositivo."
+                }
+                .onFailure { _photoMessage.value = it.message ?: "No se pudo guardar la foto." }
         }
     }
 

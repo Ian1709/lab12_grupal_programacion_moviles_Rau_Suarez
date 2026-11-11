@@ -20,14 +20,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.tecsup.pokemon.domain.model.UserSession
 
 @Composable
@@ -36,6 +39,8 @@ fun ProfileScreen(
     onBack: () -> Unit,
     onOpenAdmin: () -> Unit,
     onSignOut: () -> Unit,
+    onPickPhoto: () -> Unit,
+    photoMessage: String? = null,
     modifier: Modifier = Modifier
 ) {
     val isAdmin = session.role == "admin"
@@ -58,12 +63,25 @@ fun ProfileScreen(
                         .background(Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary, Color(0xFF8F342A)))),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        (session.email?.firstOrNull()?.uppercase() ?: "P"),
-                        style = MaterialTheme.typography.displaySmall,
-                        color = Color.White,
-                        fontWeight = FontWeight.Black
-                    )
+                    if (session.photoUri != null) {
+                        AsyncImage(
+                            model = session.photoUri,
+                            contentDescription = "Foto de perfil",
+                            modifier = Modifier.fillMaxSize().clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Text(
+                            (session.email?.firstOrNull()?.uppercase() ?: "P"),
+                            style = MaterialTheme.typography.displaySmall,
+                            color = Color.White,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
+                }
+                OutlinedButton(onClick = onPickPhoto) { Text("Cambiar foto desde galería") }
+                if (photoMessage != null) {
+                    Text(photoMessage, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Spacer(Modifier.height(14.dp))
                 Text(session.displayName ?: session.email ?: "Entrenador Pokémon", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
@@ -78,6 +96,7 @@ fun ProfileScreen(
                 ProfileInfo("Acceso", if (isAdmin) "Catálogo y administración" else "Catálogo y favoritos")
                 ProfileInfo("Sesión", "Cuenta autenticada con Firebase")
                 ProfileInfo("Identificador", session.uid.take(8).uppercase() + "…")
+                Text("La foto se guarda en este dispositivo para tu cuenta.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Card(

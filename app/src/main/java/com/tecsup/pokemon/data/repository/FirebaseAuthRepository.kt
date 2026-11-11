@@ -1,13 +1,17 @@
 package com.tecsup.pokemon.data.repository
 
 import android.content.Context
+import android.net.Uri
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.tecsup.pokemon.domain.model.UserSession
 import com.tecsup.pokemon.domain.repository.AuthRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import java.io.File
 
 class FirebaseAuthRepository(context: Context) : AuthRepository {
     private val appContext = context.applicationContext
@@ -62,10 +66,26 @@ class FirebaseAuthRepository(context: Context) : AuthRepository {
         requireNotNull(auth) { "Firebase no está configurado." }.signOut()
     }
 
-    override suspend fun updateProfilePhoto(photoUri: String) {
+    override suspend fun updateProfilePhoto(photoUri: String): String = withContext(Dispatchers.IO) {
         val user = requireNotNull(auth?.currentUser) { "Inicia sesión para cambiar tu foto." }
-        appContext.getSharedPreferences("profile_photos", Context.MODE_PRIVATE)
-            .edit().putString(user.uid, photoUri).apply()
+        val directory = File(appContext.filesDir, "profile_photos").apply { mkdirs() }
+        val temporary = File.createTempFile("profile_", ".tmp", directory)
+        val destination = File(directory, "${user.uid}.img")
+        try {
+            val source = requireNotNull(appContext.contentResolver.openInputStream(Uri.parse(photoUri))) {
+                "No se pudo abrir la imagen seleccionada."
+            }
+            source.use { input -> temporary.outputStream().use { output -> input.copyTo(output) } }
+            check(temporary.renameTo(destination) || temporary.copyTo(destination, overwrite = true).exists()) {
+                "No se pudo guardar la foto de perfil."
+            }
+            val savedUri = Uri.fromFile(destination).toString()
+            appContext.getSharedPreferences("profile_photos", Context.MODE_PRIVATE)
+                .edit().putString(user.uid, savedUri).apply()
+            savedUri
+        } finally {
+            temporary.delete()
+        }
     }
 
     private suspend fun FirebaseUser.toSession(): UserSession {
