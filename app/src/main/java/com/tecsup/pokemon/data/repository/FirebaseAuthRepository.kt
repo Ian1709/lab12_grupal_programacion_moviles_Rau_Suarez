@@ -10,7 +10,8 @@ import com.tecsup.pokemon.domain.repository.AuthRepository
 import kotlinx.coroutines.tasks.await
 
 class FirebaseAuthRepository(context: Context) : AuthRepository {
-    private val firebaseApp = FirebaseApp.initializeApp(context.applicationContext)
+    private val appContext = context.applicationContext
+    private val firebaseApp = FirebaseApp.initializeApp(appContext)
     private val auth = firebaseApp?.let(FirebaseAuth::getInstance)
     private val firestore = firebaseApp?.let(FirebaseFirestore::getInstance)
 
@@ -61,12 +62,19 @@ class FirebaseAuthRepository(context: Context) : AuthRepository {
         requireNotNull(auth) { "Firebase no está configurado." }.signOut()
     }
 
+    override suspend fun updateProfilePhoto(photoUri: String) {
+        val user = requireNotNull(auth?.currentUser) { "Inicia sesión para cambiar tu foto." }
+        appContext.getSharedPreferences("profile_photos", Context.MODE_PRIVATE)
+            .edit().putString(user.uid, photoUri).apply()
+    }
+
     private suspend fun FirebaseUser.toSession(): UserSession {
         val database = requireNotNull(firestore) { "Firebase no está configurado." }
         val profile = database.collection("usuarios").document(uid).get().await()
         val role = profile.getString("rol")?.trim()?.lowercase()
             ?: throw IllegalStateException("No existe el campo rol en Firestore para este usuario.")
         require(role == "admin" || role == "usuario") { "El rol debe ser admin o usuario." }
-        return UserSession(uid = uid, email = email, role = role, displayName = profile.getString("nombre"))
+        val photoUri = appContext.getSharedPreferences("profile_photos", Context.MODE_PRIVATE).getString(uid, null)
+        return UserSession(uid = uid, email = email, role = role, displayName = profile.getString("nombre"), photoUri = photoUri)
     }
 }

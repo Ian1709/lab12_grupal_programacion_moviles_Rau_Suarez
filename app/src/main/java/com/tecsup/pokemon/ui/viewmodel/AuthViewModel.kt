@@ -48,6 +48,14 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         }
     }
 
+    fun updateProfilePhoto(photoUri: String) {
+        viewModelScope.launch {
+            val current = (_session.value as? UiState.Success)?.data ?: return@launch
+            runCatching { repository.updateProfilePhoto(photoUri) }
+                .onSuccess { _session.value = UiState.Success(current.copy(photoUri = photoUri)) }
+        }
+    }
+
     companion object {
         fun factory(repository: AuthRepository) = object : androidx.lifecycle.ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
