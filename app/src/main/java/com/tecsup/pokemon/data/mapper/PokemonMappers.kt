@@ -3,6 +3,7 @@ package com.tecsup.pokemon.data.mapper
 import com.tecsup.pokemon.data.local.PokemonEntity
 import com.tecsup.pokemon.data.remote.PokemonDetailDto
 import com.tecsup.pokemon.data.remote.PokemonReferenceDto
+import com.tecsup.pokemon.data.remote.PokemonSpeciesReferenceDto
 import com.tecsup.pokemon.domain.model.Pokemon
 
 private const val OFFICIAL_ART_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/"
@@ -53,6 +54,9 @@ fun PokemonDetailDto.toEntity(isFavorite: Boolean, generation: Int): PokemonEnti
     isFavorite = isFavorite
 )
 
+fun PokemonSpeciesReferenceDto.speciesId(): Int =
+    url.trimEnd('/').substringAfterLast('/').toInt()
+
 fun generationFromId(id: Int): Int = when (id) {
     in 1..151 -> 1
     in 152..251 -> 2
@@ -62,7 +66,8 @@ fun generationFromId(id: Int): Int = when (id) {
     in 650..721 -> 6
     in 722..809 -> 7
     in 810..905 -> 8
-    else -> 9
+    in 906..1025 -> 9
+    else -> 0
 }
 
 fun String.generationNumber(): Int = when (substringAfterLast('-').lowercase()) {

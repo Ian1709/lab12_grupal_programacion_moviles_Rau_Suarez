@@ -48,9 +48,7 @@ fun PokemonNavigation(
     val isOffline by pokemonViewModel.isOffline.collectAsStateWithLifecycle()
     val currentUser = (session as? UiState.Success)?.data
     val context = LocalContext.current
-    val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) pokemonViewModel.synchronize()
-    }
+    val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
     LaunchedEffect(currentUser?.uid) {
         if (currentUser != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&

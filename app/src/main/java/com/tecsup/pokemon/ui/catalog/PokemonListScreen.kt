@@ -141,7 +141,9 @@ private fun PokemonCard(
                 contentAlignment = Alignment.Center
             ) { PokemonArtwork(pokemon, Modifier.size(70.dp)) }
             Column(Modifier.weight(1f)) {
-                Text("N.º ${pokemon.id.toString().padStart(3, '0')}  ·  GENERACIÓN ${pokemon.generation}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
+                val numberLabel = "N.º ${pokemon.id.toString().padStart(3, '0')}"
+                val generationLabel = pokemon.generation.takeIf { it > 0 }?.let { "  ·  GENERACIÓN $it" }.orEmpty()
+                Text(numberLabel + generationLabel, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(3.dp))
                 Text(pokemon.name.replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Text(pokemon.types.joinToString(" · ") { it.replaceFirstChar { c -> c.uppercase() } }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)

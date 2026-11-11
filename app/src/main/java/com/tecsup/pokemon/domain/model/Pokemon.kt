@@ -26,7 +26,7 @@ fun Pokemon.debut(): PokemonDebut = when (generation) {
     7 -> PokemonDebut("Pokémon Sun & Moon · 2016", "Pokémon the Series: Sun & Moon · Generación VII")
     8 -> PokemonDebut("Pokémon Sword & Shield · 2019", "Pokémon Journeys · Generación VIII")
     9 -> PokemonDebut("Pokémon Scarlet & Violet · 2022", "Pokémon Horizons · Generación IX")
-    else -> PokemonDebut("Generación ${generation}", "Temporada de anime de la generación ${generation}")
+    else -> PokemonDebut("Información de debut no disponible", "Información de temporada no disponible")
 }
 
 data class PokemonStats(

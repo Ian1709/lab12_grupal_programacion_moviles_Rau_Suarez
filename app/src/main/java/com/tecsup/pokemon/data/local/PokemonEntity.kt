@@ -1,5 +1,6 @@
 package com.tecsup.pokemon.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -11,6 +12,6 @@ data class PokemonEntity(
     val types: List<String>,
     val height: Int?,
     val weight: Int?,
-    val generation: Int = 1,
+    @ColumnInfo(defaultValue = "1") val generation: Int = 1,
     val isFavorite: Boolean = false
 )
