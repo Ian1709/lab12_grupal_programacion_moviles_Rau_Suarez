@@ -74,7 +74,8 @@ fun PokemonNavigation(
             LoginScreen(
                 isLoading = session is UiState.Loading,
                 errorMessage = (session as? UiState.Error)?.message,
-                onLogin = authViewModel::signIn
+                onLogin = authViewModel::signIn,
+                onRegister = authViewModel::signUp
             )
         }
         composable("catalog") {

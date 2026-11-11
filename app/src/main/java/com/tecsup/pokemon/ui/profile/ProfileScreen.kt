@@ -66,7 +66,7 @@ fun ProfileScreen(
                     )
                 }
                 Spacer(Modifier.height(14.dp))
-                Text(session.email ?: "Entrenador Pokémon", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text(session.displayName ?: session.email ?: "Entrenador Pokémon", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
                 Text(
                     if (isAdmin) "ADMINISTRADOR" else "ENTRENADOR",

@@ -38,6 +38,25 @@ class FirebaseAuthRepository(context: Context) : AuthRepository {
         }
     }
 
+    override suspend fun signUp(displayName: String, email: String, password: String): UserSession {
+        val firebaseAuth = requireNotNull(auth) {
+            "Firebase no está configurado. Coloca app/google-services.json en este equipo y vuelve a sincronizar Gradle."
+        }
+        val database = requireNotNull(firestore) { "Firebase no está configurado." }
+        val result = firebaseAuth.createUserWithEmailAndPassword(email.trim(), password).await()
+        val user = requireNotNull(result.user) { "Firebase no devolvió el usuario creado." }
+        return try {
+            database.collection("usuarios").document(user.uid).set(
+                mapOf("rol" to "usuario", "nombre" to displayName.trim())
+            ).await()
+            user.toSession()
+        } catch (error: Throwable) {
+            runCatching { user.delete().await() }
+            firebaseAuth.signOut()
+            throw error
+        }
+    }
+
     override suspend fun signOut() {
         requireNotNull(auth) { "Firebase no está configurado." }.signOut()
     }
@@ -48,6 +67,6 @@ class FirebaseAuthRepository(context: Context) : AuthRepository {
         val role = profile.getString("rol")?.trim()?.lowercase()
             ?: throw IllegalStateException("No existe el campo rol en Firestore para este usuario.")
         require(role == "admin" || role == "usuario") { "El rol debe ser admin o usuario." }
-        return UserSession(uid = uid, email = email, role = role)
+        return UserSession(uid = uid, email = email, role = role, displayName = profile.getString("nombre"))
     }
 }

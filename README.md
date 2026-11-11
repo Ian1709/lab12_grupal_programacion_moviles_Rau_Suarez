@@ -5,6 +5,7 @@ Aplicación Android para explorar Pokémon de tipo fuego. Proyecto en Kotlin con
 ## Funciones
 
 - Inicio de sesión con correo y contraseña de Firebase.
+- Registro de entrenadores con nombre, correo y contraseña; las cuentas nuevas reciben el rol `usuario` desde Firestore.
 - Roles `usuario` y `admin` leídos desde `usuarios/{uid}` en Firestore.
 - Catálogo PokeAPI con búsqueda, ilustraciones, detalle y favoritos.
 - Ficha con altura, peso, juego original de su generación y referencia de temporada del anime.
@@ -47,26 +48,14 @@ El repositorio no contiene el archivo de configuración ni credenciales. Una per
 
 1. Registra una app Android con el paquete exacto `com.tecsup.pokemon`.
 2. Activa el método **Correo electrónico/contraseña** en Authentication.
-3. Crea dos cuentas de prueba, una administradora y otra normal.
-4. Crea Firestore y añade `usuarios/{uid}` para cada cuenta. El campo `rol` debe ser el texto `admin` o `usuario`; el documento usa el UID que asigna Authentication.
+3. Crea el usuario administrador desde Authentication y Firestore. Su perfil debe estar en `usuarios/{uid}` con `rol: "admin"` y `nombre`.
+4. Publica las reglas de [firestore.rules](firestore.rules). Permiten que la app cree su propio perfil solo con rol `usuario`; el cliente no puede asignarse rol admin.
 5. Descarga `google-services.json` y colócalo localmente en `app/google-services.json`.
-6. Sincroniza Gradle y ejecuta la app.
+6. Sincroniza Gradle y ejecuta la app. Los entrenadores pueden registrarse desde el enlace **¿Nuevo entrenador? Crear cuenta**; la app crea la cuenta de Authentication y el perfil de usuario en Firestore.
 
 No subas `google-services.json`, contraseñas ni claves. `.gitignore` excluye el archivo. Sin esta configuración, la app compila, pero el acceso Firebase no puede completarse.
 
-Reglas de Firestore del laboratorio para que cada usuario lea únicamente su propio perfil:
-
-```text
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /usuarios/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
-      allow write: if false;
-    }
-  }
-}
-```
+El registro necesita las reglas de `firestore.rules`: si se mantienen reglas que deniegan toda escritura, Firebase Authentication podrá crear la cuenta, pero la app no podrá guardar el perfil y cancelará el alta.
 
 ## API de Pokémon
 

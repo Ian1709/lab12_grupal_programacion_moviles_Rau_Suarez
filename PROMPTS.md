@@ -79,3 +79,11 @@
 - Qué respondió (resumen): Recomendó un repositorio falso, un monitor de red falso y pruebas locales de conversión.
 - Qué usamos/cambiamos y por qué: Se agregaron pruebas del catálogo, favoritos, error sin conexión y conversión de generaciones.
 - Qué aprendimos: Las interfaces permiten verificar estados y reglas de datos sin depender de servicios externos.
+
+## Consulta 11
+- Fecha: 2026-11-11
+- Herramienta: OpenAI Codex
+- Prompt: Añadir registro de entrenadores conectado a Firebase y reemplazar la portada de Pokébola por la imagen adjunta.
+- Qué respondió (resumen): Recomendó crear la cuenta Auth, guardar un perfil propio con rol usuario y validar el rol desde Firestore; también usar la imagen proporcionada como recurso local.
+- Qué usamos/cambiamos y por qué: Se agregó alta con nombre, correo y contraseña, perfil Firestore `usuario`, reglas que impiden autoasignarse admin y la nueva portada.
+- Qué aprendimos: El cliente puede crear una cuenta normal, pero la asignación de administrador debe permanecer bajo control del equipo.

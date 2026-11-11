@@ -31,6 +31,15 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         }
     }
 
+    fun signUp(displayName: String, email: String, password: String) {
+        viewModelScope.launch {
+            _session.value = UiState.Loading
+            runCatching { repository.signUp(displayName, email, password) }
+                .onSuccess { _session.value = UiState.Success(it) }
+                .onFailure { _session.value = UiState.Error(it.message ?: "No se pudo crear la cuenta.") }
+        }
+    }
+
     fun signOut() {
         viewModelScope.launch {
             runCatching { repository.signOut() }
