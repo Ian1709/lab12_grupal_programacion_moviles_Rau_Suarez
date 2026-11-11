@@ -1,13 +1,13 @@
 # Pokédex Fire
 
-Aplicación Android para explorar Pokémon de tipo fuego. Proyecto en Kotlin con Jetpack Compose, Material 3, MVVM, Retrofit, Room y Firebase Authentication/Cloud Firestore.
+Aplicación Android para explorar catálogos Pokémon de tipo fuego, planta y agua. Proyecto en Kotlin con Jetpack Compose, Material 3, MVVM, Retrofit, Room y Firebase Authentication/Cloud Firestore.
 
 ## Funciones
 
 - Inicio de sesión con correo y contraseña de Firebase.
 - Registro de entrenadores con nombre, correo y contraseña; las cuentas nuevas reciben el rol `usuario` desde Firestore.
 - Roles `usuario` y `admin` leídos desde `usuarios/{uid}` en Firestore.
-- Catálogo PokeAPI con búsqueda, ilustraciones, detalle y favoritos.
+- Catálogos PokeAPI de fuego, planta y agua, con búsqueda, ilustraciones, detalle y favoritos.
 - Ficha con altura, peso, juego original de su generación y referencia de temporada del anime.
 - Favoritos persistentes y catálogo disponible sin conexión cuando ya se sincronizó.
 - Panel administrador con totales, sincronización y limpieza confirmada de los datos locales.
