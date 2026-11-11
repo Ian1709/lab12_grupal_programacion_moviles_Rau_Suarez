@@ -11,8 +11,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class PokemonListViewModel(
     private val repository: PokemonRepository,
     private val networkMonitor: NetworkMonitor,
@@ -26,17 +29,19 @@ class PokemonListViewModel(
 
     private val _isOffline = MutableStateFlow(!networkMonitor.isOnline.value)
     val isOffline: StateFlow<Boolean> = _isOffline.asStateFlow()
-    private var hasCompletedFirstSync = false
+    private val _selectedType = MutableStateFlow("fire")
+    val selectedType: StateFlow<String> = _selectedType.asStateFlow()
+    private val synchronizedTypes = mutableSetOf<String>()
 
     init {
         viewModelScope.launch {
-            repository.observePokemon().catch { error ->
+            _selectedType.flatMapLatest { type -> repository.observePokemon(type) }.catch { error ->
                 _items.value = UiState.Error(error.message ?: "No se pudo leer el catálogo local.")
             }.collect { rows ->
                 _items.value = when {
                     rows.isNotEmpty() -> UiState.Success(rows)
                     !networkMonitor.isOnline.value -> UiState.Error("Sin conexión y no hay datos guardados.")
-                    hasCompletedFirstSync -> UiState.Success(emptyList())
+                    _selectedType.value in synchronizedTypes -> UiState.Success(emptyList())
                     else -> UiState.Loading
                 }
             }
@@ -60,22 +65,29 @@ class PokemonListViewModel(
         }
     }
 
-    fun synchronize(onComplete: (() -> Unit)? = null, onError: ((Throwable) -> Unit)? = null) {
+    fun selectType(type: String) {
+        val normalized = type.lowercase()
+        if (normalized !in setOf("fire", "grass", "water") || normalized == _selectedType.value) return
+        _selectedType.value = normalized
+        _items.value = if (networkMonitor.isOnline.value) UiState.Loading else UiState.Error("Sin conexión y no hay datos guardados para este tipo.")
+        if (networkMonitor.isOnline.value) synchronize(type = normalized)
+    }
+
+    fun synchronize(onComplete: (() -> Unit)? = null, onError: ((Throwable) -> Unit)? = null, type: String = _selectedType.value) {
         if (!networkMonitor.isOnline.value) {
             showOfflineIfEmpty()
             onError?.invoke(IllegalStateException("Sin conexión a internet."))
             return
         }
         viewModelScope.launch {
-            runCatching { repository.synchronize() }
+            runCatching { repository.synchronize(type) }
                 .onSuccess { count ->
-                    hasCompletedFirstSync = true
+                    synchronizedTypes.add(type)
                     notifier.notifySyncComplete(count)
                     if (_items.value is UiState.Loading && count == 0) _items.value = UiState.Success(emptyList())
                     onComplete?.invoke()
                 }
                 .onFailure {
-                    hasCompletedFirstSync = true
                     showOfflineIfEmpty(it.message ?: "No se pudo sincronizar.")
                     onError?.invoke(it)
                 }

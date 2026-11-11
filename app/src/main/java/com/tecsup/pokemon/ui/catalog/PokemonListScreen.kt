@@ -57,6 +57,8 @@ fun PokemonListScreen(
     isAdmin: Boolean = false,
     onOpenAdmin: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
+    selectedType: String = "fire",
+    onSelectType: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var query by rememberSaveable { mutableStateOf("") }

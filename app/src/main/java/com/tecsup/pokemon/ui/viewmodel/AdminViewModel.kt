@@ -33,12 +33,12 @@ class AdminViewModel(
         }
     }
 
-    fun synchronize() {
+    fun synchronize(type: String = "fire") {
         if (_isSyncing.value) return
         viewModelScope.launch {
             _isSyncing.value = true
             _message.value = null
-            runCatching { repository.synchronize() }
+            runCatching { repository.synchronize(type) }
                 .onSuccess { count ->
                     notifier.notifySyncComplete(count)
                     _message.value = "Sincronización completada: $count Pokémon guardados."

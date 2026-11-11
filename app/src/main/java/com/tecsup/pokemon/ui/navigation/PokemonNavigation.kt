@@ -46,6 +46,7 @@ fun PokemonNavigation(
     val items by pokemonViewModel.items.collectAsStateWithLifecycle()
     val favorites by pokemonViewModel.favorites.collectAsStateWithLifecycle()
     val isOffline by pokemonViewModel.isOffline.collectAsStateWithLifecycle()
+    val selectedType by pokemonViewModel.selectedType.collectAsStateWithLifecycle()
     val currentUser = (session as? UiState.Success)?.data
     val context = LocalContext.current
     val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
@@ -81,6 +82,8 @@ fun PokemonNavigation(
         composable("catalog") {
             PokemonListScreen(
                 state = items,
+                selectedType = selectedType,
+                onSelectType = pokemonViewModel::selectType,
                 onSelectPokemon = { navController.navigate("detail/${it.id}/${it.name}") },
                 onToggleFavorite = pokemonViewModel::toggleFavorite,
                 onOpenFavorites = { navController.navigate("favorites") },
@@ -150,7 +153,7 @@ fun PokemonNavigation(
                     isSyncing = isSyncing,
                     message = message,
                     onBack = { navController.popBackStack() },
-                    onSynchronize = adminViewModel::synchronize,
+                    onSynchronize = { adminViewModel.synchronize(selectedType) },
                     onClearCache = adminViewModel::clearCache
                 )
             }
