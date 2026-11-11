@@ -8,7 +8,8 @@ data class Pokemon(
     val height: Int? = null,
     val weight: Int? = null,
     val isFavorite: Boolean = false,
-    val generation: Int = 1
+    val generation: Int = 1,
+    val dexNumber: Int = id
 )
 
 data class PokemonDebut(

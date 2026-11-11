@@ -58,7 +58,7 @@ private class FakeNetworkMonitor(online: Boolean) : NetworkMonitor {
 private class FakePokemonRepository(items: List<Pokemon> = emptyList()) : PokemonRepository {
     private val catalog = MutableStateFlow(items)
     private val initialItems = items
-    override fun observePokemon(): Flow<List<Pokemon>> = catalog
+    override fun observePokemon(type: String): Flow<List<Pokemon>> = catalog
     override fun observeFavorites(): Flow<List<Pokemon>> = flowOf(initialItems.filter(Pokemon::isFavorite))
     override fun observePokemon(id: Int): Flow<Pokemon?> = flowOf(initialItems.firstOrNull { it.id == id })
     override fun observeStats(): Flow<PokemonStats> = flowOf(PokemonStats(initialItems.size, initialItems.count(Pokemon::isFavorite)))

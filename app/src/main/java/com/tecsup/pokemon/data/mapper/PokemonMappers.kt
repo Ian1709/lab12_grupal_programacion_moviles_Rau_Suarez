@@ -16,6 +16,7 @@ fun PokemonEntity.toDomain(): Pokemon = Pokemon(
     height = height,
     weight = weight,
     generation = generation,
+    dexNumber = dexNumber,
     isFavorite = isFavorite
 )
 
@@ -27,19 +28,21 @@ fun Pokemon.toEntity(): PokemonEntity = PokemonEntity(
     height = height,
     weight = weight,
     generation = generation,
+    dexNumber = dexNumber,
     isFavorite = isFavorite
 )
 
-fun PokemonReferenceDto.toEntity(): PokemonEntity {
+fun PokemonReferenceDto.toEntity(type: String = "fire"): PokemonEntity {
     val pokemonId = url.trimEnd('/').substringAfterLast('/').toInt()
     return PokemonEntity(
         id = pokemonId,
         name = name,
         imageUrl = "$OFFICIAL_ART_BASE$pokemonId.png",
-        types = listOf("fire"),
+        types = listOf(type),
         height = null,
         weight = null,
-        generation = generationFromId(pokemonId)
+        generation = generationFromId(pokemonId),
+        dexNumber = pokemonId
     )
 }
 
@@ -51,7 +54,8 @@ fun PokemonDetailDto.toEntity(isFavorite: Boolean, generation: Int): PokemonEnti
     height = height,
     weight = weight,
     generation = generation,
-    isFavorite = isFavorite
+    isFavorite = isFavorite,
+    dexNumber = species.speciesId()
 )
 
 fun PokemonSpeciesReferenceDto.speciesId(): Int =

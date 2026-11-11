@@ -13,5 +13,6 @@ data class PokemonEntity(
     val height: Int?,
     val weight: Int?,
     @ColumnInfo(defaultValue = "1") val generation: Int = 1,
+    @ColumnInfo(defaultValue = "0") val dexNumber: Int = id,
     val isFavorite: Boolean = false
 )

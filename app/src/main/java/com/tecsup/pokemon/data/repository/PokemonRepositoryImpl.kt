@@ -17,7 +17,7 @@ class PokemonRepositoryImpl(
     private val dao: PokemonDao,
     private val api: PokemonApiService
 ) : PokemonRepository {
-    override fun observePokemon(): Flow<List<Pokemon>> = dao.observeAll().map { rows -> rows.map { it.toDomain() } }
+    override fun observePokemon(type: String): Flow<List<Pokemon>> = dao.observeCatalog(type).map { rows -> rows.map { it.toDomain() } }
 
     override fun observeFavorites(): Flow<List<Pokemon>> = dao.observeFavorites().map { rows -> rows.map { it.toDomain() } }
 
@@ -29,8 +29,12 @@ class PokemonRepositoryImpl(
 
     override suspend fun synchronize(type: String): Int {
         val response = api.getPokemonByType(type)
-        val catalog = response.pokemon.map { it.pokemon.toEntity() }
-        dao.replaceCatalog(catalog)
+        val catalog = response.pokemon.mapNotNull { slot ->
+            val pokemon = slot.pokemon
+            val pokemonId = pokemon.url.trimEnd('/').substringAfterLast('/').toInt()
+            pokemon.takeIf { pokemonId in 1..1025 }?.toEntity(type)
+        }
+        dao.replaceCatalog(type, catalog)
         return catalog.size
     }
 

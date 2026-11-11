@@ -5,7 +5,7 @@ import com.tecsup.pokemon.domain.model.PokemonStats
 import kotlinx.coroutines.flow.Flow
 
 interface PokemonRepository {
-    fun observePokemon(): Flow<List<Pokemon>>
+    fun observePokemon(type: String = "fire"): Flow<List<Pokemon>>
     fun observeFavorites(): Flow<List<Pokemon>>
     fun observePokemon(id: Int): Flow<Pokemon?>
     fun observeStats(): Flow<PokemonStats>
