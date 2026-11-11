@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -30,10 +31,10 @@ interface PokemonDao {
     @Query("SELECT COUNT(*) FROM pokemon WHERE isFavorite = 1")
     fun observeFavoriteCount(): Flow<Int>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun upsert(entity: PokemonEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun upsertAll(entities: List<PokemonEntity>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
