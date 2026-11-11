@@ -14,6 +14,9 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
     private val _session = MutableStateFlow<UiState<UserSession?>>(UiState.Loading)
     val session: StateFlow<UiState<UserSession?>> = _session.asStateFlow()
 
+    private val _photoMessage = MutableStateFlow<String?>(null)
+    val photoMessage: StateFlow<String?> = _photoMessage.asStateFlow()
+
     init {
         viewModelScope.launch {
             runCatching { repository.currentSession() }
@@ -31,11 +34,33 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         }
     }
 
+    fun signUp(displayName: String, email: String, password: String) {
+        viewModelScope.launch {
+            _session.value = UiState.Loading
+            runCatching { repository.signUp(displayName, email, password) }
+                .onSuccess { _session.value = UiState.Success(it) }
+                .onFailure { _session.value = UiState.Error(it.message ?: "No se pudo crear la cuenta.") }
+        }
+    }
+
     fun signOut() {
         viewModelScope.launch {
             runCatching { repository.signOut() }
                 .onSuccess { _session.value = UiState.Success(null) }
                 .onFailure { _session.value = UiState.Error(it.message ?: "No se pudo cerrar sesión.") }
+        }
+    }
+
+    fun updateProfilePhoto(photoUri: String) {
+        viewModelScope.launch {
+            val current = (_session.value as? UiState.Success)?.data ?: return@launch
+            _photoMessage.value = null
+            runCatching { repository.updateProfilePhoto(photoUri) }
+                .onSuccess { savedUri ->
+                    _session.value = UiState.Success(current.copy(photoUri = savedUri))
+                    _photoMessage.value = "Foto de perfil actualizada en este dispositivo."
+                }
+                .onFailure { _photoMessage.value = it.message ?: "No se pudo guardar la foto." }
         }
     }
 

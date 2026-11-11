@@ -20,8 +20,22 @@ data class PokemonDetailDto(
     @SerializedName("name") val name: String,
     @SerializedName("height") val height: Int,
     @SerializedName("weight") val weight: Int,
+    @SerializedName("species") val species: PokemonSpeciesReferenceDto,
     @SerializedName("types") val types: List<PokemonTypeSlotDto> = emptyList(),
     @SerializedName("sprites") val sprites: PokemonSpritesDto?
+)
+
+data class PokemonSpeciesReferenceDto(
+    @SerializedName("name") val name: String,
+    @SerializedName("url") val url: String
+)
+
+data class PokemonSpeciesDto(
+    @SerializedName("generation") val generation: PokemonGenerationReferenceDto
+)
+
+data class PokemonGenerationReferenceDto(
+    @SerializedName("name") val name: String
 )
 
 data class PokemonTypeSlotDto(

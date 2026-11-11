@@ -1,6 +1,8 @@
 package com.tecsup.pokemon.data.repository
 
 import com.tecsup.pokemon.data.local.PokemonDao
+import com.tecsup.pokemon.data.mapper.generationNumber
+import com.tecsup.pokemon.data.mapper.speciesId
 import com.tecsup.pokemon.data.mapper.toDomain
 import com.tecsup.pokemon.data.mapper.toEntity
 import com.tecsup.pokemon.data.remote.PokemonApiService
@@ -15,7 +17,7 @@ class PokemonRepositoryImpl(
     private val dao: PokemonDao,
     private val api: PokemonApiService
 ) : PokemonRepository {
-    override fun observePokemon(): Flow<List<Pokemon>> = dao.observeAll().map { rows -> rows.map { it.toDomain() } }
+    override fun observePokemon(type: String): Flow<List<Pokemon>> = dao.observeCatalog(type).map { rows -> rows.map { it.toDomain() } }
 
     override fun observeFavorites(): Flow<List<Pokemon>> = dao.observeFavorites().map { rows -> rows.map { it.toDomain() } }
 
@@ -25,16 +27,22 @@ class PokemonRepositoryImpl(
         dao.observeCount(), dao.observeFavoriteCount()
     ) { total, favorites -> PokemonStats(total, favorites) }
 
-    override suspend fun synchronize(type: String) {
+    override suspend fun synchronize(type: String): Int {
         val response = api.getPokemonByType(type)
-        val catalog = response.pokemon.map { it.pokemon.toEntity() }
-        dao.replaceCatalog(catalog)
+        val catalog = response.pokemon.mapNotNull { slot ->
+            val pokemon = slot.pokemon
+            val pokemonId = pokemon.url.trimEnd('/').substringAfterLast('/').toInt()
+            pokemon.takeIf { pokemonId in 1..1025 }?.toEntity(type)
+        }
+        dao.replaceCatalog(type, catalog)
+        return catalog.size
     }
 
     override suspend fun loadDetails(name: String): Pokemon {
         val details = api.getPokemonDetail(name.trim().lowercase())
+        val generation = api.getPokemonSpecies(details.species.speciesId()).generation.name.generationNumber()
         val currentFavorite = dao.getById(details.id)?.isFavorite ?: false
-        val entity = details.toEntity(currentFavorite)
+        val entity = details.toEntity(currentFavorite, generation)
         dao.upsert(entity)
         return entity.toDomain()
     }
@@ -44,6 +52,6 @@ class PokemonRepositoryImpl(
     }
 
     override suspend fun clearCache() {
-        dao.clearNonFavoriteCache()
+        dao.clearAll()
     }
 }

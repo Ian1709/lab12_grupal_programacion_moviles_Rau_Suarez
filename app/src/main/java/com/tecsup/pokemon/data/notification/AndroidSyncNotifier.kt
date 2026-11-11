@@ -12,7 +12,7 @@ import androidx.core.content.ContextCompat
 import com.tecsup.pokemon.domain.repository.SyncNotifier
 
 class AndroidSyncNotifier(private val context: Context) : SyncNotifier {
-    override fun notifySyncComplete() {
+    override fun notifySyncComplete(savedCount: Int) {
         createChannel()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
@@ -21,7 +21,7 @@ class AndroidSyncNotifier(private val context: Context) : SyncNotifier {
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_notify_sync)
             .setContentTitle("Pokédex sincronizada")
-            .setContentText("El catálogo de Pokémon está actualizado.")
+            .setContentText("Se guardaron $savedCount elementos Pokémon.")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .build()
