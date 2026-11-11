@@ -20,6 +20,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -67,9 +68,14 @@ fun PokemonListScreen(
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                 Column {
                     Text("POKÉDEX", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                    Text("Tipo fuego", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    Text("Tipo ${typeLabel(selectedType).lowercase()}", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                 }
                 TextButton(onClick = onOpenProfile) { Text("◉  Perfil") }
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("fire", "grass", "water").forEach { type ->
+                    FilterChip(selected = selectedType == type, onClick = { onSelectType(type) }, label = { Text("${typeEmoji(type)} ${typeLabel(type)}") })
+                }
             }
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                 TextButton(onClick = onOpenFavorites) { Text("♥ Favoritos") }
@@ -93,6 +99,7 @@ fun PokemonListScreen(
             Spacer(Modifier.height(12.dp))
             CollectionHero(
                 count = (state as? UiState.Success)?.data?.size,
+                type = selectedType,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(12.dp))
@@ -114,7 +121,7 @@ fun PokemonListScreen(
                     } else {
                         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 20.dp)) {
                             items(filtered, key = { it.id }) { pokemon ->
-                                PokemonCard(pokemon, onSelectPokemon, onToggleFavorite)
+                                PokemonCard(pokemon, onSelectPokemon, onToggleFavorite, selectedType)
                             }
                         }
                     }
@@ -128,7 +135,8 @@ fun PokemonListScreen(
 private fun PokemonCard(
     pokemon: Pokemon,
     onSelect: (Pokemon) -> Unit,
-    onToggleFavorite: (Pokemon) -> Unit
+    onToggleFavorite: (Pokemon) -> Unit,
+    type: String
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().clickable { onSelect(pokemon) },
@@ -139,11 +147,11 @@ private fun PokemonCard(
         Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Box(
                 Modifier.size(78.dp).clip(RoundedCornerShape(20.dp))
-                    .background(Brush.linearGradient(listOf(Color(0xFF542720), Color(0xFF29252A)))),
+                    .background(Brush.linearGradient(cardGradient(type))),
                 contentAlignment = Alignment.Center
             ) { PokemonArtwork(pokemon, Modifier.size(70.dp)) }
             Column(Modifier.weight(1f)) {
-                val numberLabel = "N.º ${pokemon.id.toString().padStart(3, '0')}"
+                val numberLabel = pokemon.dexNumber.takeIf { it > 0 }?.let { "N.º ${it.toString().padStart(3, '0')}" } ?: "N.º —"
                 val generationLabel = pokemon.generation.takeIf { it > 0 }?.let { "  ·  GENERACIÓN $it" }.orEmpty()
                 Text(numberLabel + generationLabel, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(3.dp))
@@ -161,7 +169,7 @@ private fun PokemonCard(
 }
 
 @Composable
-private fun CollectionHero(count: Int?, modifier: Modifier = Modifier) {
+private fun CollectionHero(count: Int?, type: String, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(24.dp),
@@ -169,16 +177,16 @@ private fun CollectionHero(count: Int?, modifier: Modifier = Modifier) {
     ) {
         Row(
             Modifier.fillMaxWidth()
-                .background(Brush.linearGradient(listOf(Color(0xFFE95A3C), Color(0xFF8E302E), Color(0xFF48212E))))
+                .background(Brush.linearGradient(heroGradient(type)))
                 .padding(horizontal = 18.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text("COLECCIÓN FIRE", style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = .76f), fontWeight = FontWeight.Bold)
+                Text("COLECCIÓN ${typeLabel(type).uppercase()}", style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = .76f), fontWeight = FontWeight.Bold)
                 Text("Tu próxima aventura", style = MaterialTheme.typography.titleLarge, color = Color.White, fontWeight = FontWeight.Black)
                 Text(
-                    count?.let { "$it Pokémon listos para descubrir" } ?: "Descubre criaturas de fuego de todas las regiones",
+                    count?.let { "$it Pokémon listos para descubrir" } ?: "Descubre criaturas de tipo ${typeLabel(type).lowercase()} de todas las regiones",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = .86f)
                 )
@@ -186,6 +194,19 @@ private fun CollectionHero(count: Int?, modifier: Modifier = Modifier) {
             Text("◉", style = MaterialTheme.typography.displayMedium, color = Color.White.copy(alpha = .88f), fontWeight = FontWeight.Black)
         }
     }
+}
+
+private fun typeLabel(type: String): String = when (type) { "grass" -> "Planta"; "water" -> "Agua"; else -> "Fuego" }
+private fun typeEmoji(type: String): String = when (type) { "grass" -> "🌿"; "water" -> "💧"; else -> "🔥" }
+private fun heroGradient(type: String): List<Color> = when (type) {
+    "grass" -> listOf(Color(0xFF43A047), Color(0xFF287849), Color(0xFF174A3A))
+    "water" -> listOf(Color(0xFF2684D9), Color(0xFF2467A8), Color(0xFF183C68))
+    else -> listOf(Color(0xFFE95A3C), Color(0xFF8E302E), Color(0xFF48212E))
+}
+private fun cardGradient(type: String): List<Color> = when (type) {
+    "grass" -> listOf(Color(0xFF244A31), Color(0xFF292D2A))
+    "water" -> listOf(Color(0xFF203D59), Color(0xFF292D32))
+    else -> listOf(Color(0xFF542720), Color(0xFF29252A))
 }
 
 

@@ -38,6 +38,7 @@ fun AdminPanelScreen(
     onBack: () -> Unit,
     onSynchronize: () -> Unit,
     onClearCache: () -> Unit,
+    selectedType: String = "fire",
     modifier: Modifier = Modifier
 ) {
     var confirmClear by remember { mutableStateOf(false) }
@@ -60,7 +61,7 @@ fun AdminPanelScreen(
         TextButton(onClick = onBack) { Text("‹ Volver al catálogo") }
         Text("CONTROL DEL CATÁLOGO", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
         Text("Panel administrador", style = MaterialTheme.typography.headlineMedium)
-        Text("Mantén actualizada la colección de tipo fuego.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Mantén actualizada la colección de tipo ${selectedTypeLabel(selectedType)}.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         when (stats) {
             UiState.Loading -> LoadingPanel(Modifier.fillMaxWidth().height(120.dp), "Cargando estadísticas...")
             is UiState.Error -> Text(stats.message, color = MaterialTheme.colorScheme.error)
@@ -83,7 +84,7 @@ fun AdminPanelScreen(
             }
         }
         Button(onClick = onSynchronize, enabled = !isSyncing, modifier = Modifier.fillMaxWidth().height(52.dp)) {
-            Text(if (isSyncing) "Sincronizando…" else "Sincronizar catálogo")
+            Text(if (isSyncing) "Sincronizando…" else "Sincronizar tipo ${selectedTypeLabel(selectedType)}")
         }
         OutlinedButton(onClick = { confirmClear = true }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
             Text("Limpiar todos los datos locales")
@@ -91,6 +92,8 @@ fun AdminPanelScreen(
         Spacer(Modifier.height(8.dp))
     }
 }
+
+private fun selectedTypeLabel(type: String): String = when (type) { "grass" -> "planta"; "water" -> "agua"; else -> "fuego" }
 
 @Composable
 private fun MetricCard(label: String, value: Int, modifier: Modifier = Modifier) {

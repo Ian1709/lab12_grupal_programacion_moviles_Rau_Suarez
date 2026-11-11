@@ -31,6 +31,7 @@ import com.tecsup.pokemon.ui.viewmodel.AdminViewModel
 import com.tecsup.pokemon.ui.admin.AdminPanelScreen
 import com.tecsup.pokemon.ui.profile.ProfileScreen
 import com.tecsup.pokemon.domain.model.UiState
+import com.tecsup.pokemon.ui.theme.PokemonTheme
 
 @Composable
 fun PokemonNavigation(
@@ -70,6 +71,7 @@ fun PokemonNavigation(
         }
     }
 
+    PokemonTheme(type = selectedType) {
     NavHost(navController = navController, startDestination = "login") {
         composable("login") {
             LoginScreen(
@@ -150,6 +152,7 @@ fun PokemonNavigation(
                 val message by adminViewModel.message.collectAsStateWithLifecycle()
                 AdminPanelScreen(
                     stats = stats,
+                    selectedType = selectedType,
                     isSyncing = isSyncing,
                     message = message,
                     onBack = { navController.popBackStack() },
@@ -158,5 +161,6 @@ fun PokemonNavigation(
                 )
             }
         }
+    }
     }
 }

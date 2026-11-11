@@ -59,7 +59,7 @@ fun PokemonDetailScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     PokemonArtwork(pokemon, Modifier.size(176.dp))
-                    Text("#${pokemon.id.toString().padStart(3, '0')}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("#${pokemon.dexNumber.toString().padStart(3, '0')}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(pokemon.name.replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Black)
                     Text(pokemon.types.joinToString("  ·  ") { it.replaceFirstChar { c -> c.uppercase() } }, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
