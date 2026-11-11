@@ -65,4 +65,15 @@ fun generationFromId(id: Int): Int = when (id) {
     else -> 9
 }
 
-fun String.generationNumber(): Int = substringAfterLast('-').toIntOrNull() ?: 1
+fun String.generationNumber(): Int = when (substringAfterLast('-').lowercase()) {
+    "i", "1" -> 1
+    "ii", "2" -> 2
+    "iii", "3" -> 3
+    "iv", "4" -> 4
+    "v", "5" -> 5
+    "vi", "6" -> 6
+    "vii", "7" -> 7
+    "viii", "8" -> 8
+    "ix", "9" -> 9
+    else -> 1
+}

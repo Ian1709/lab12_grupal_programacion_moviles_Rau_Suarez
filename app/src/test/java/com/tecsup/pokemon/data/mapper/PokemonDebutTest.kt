@@ -11,6 +11,8 @@ class PokemonDebutTest {
         assertEquals(1, generationFromId(4))
         assertEquals(2, generationFromId(155))
         assertEquals(9, generationFromId(909))
+        assertEquals(4, "generation-iv".generationNumber())
+        assertEquals(9, "generation-ix".generationNumber())
     }
 
     @Test fun `la ficha indica el primer juego de la generacion nueve y su anime`() {
