@@ -11,5 +11,6 @@ data class PokemonEntity(
     val types: List<String>,
     val height: Int?,
     val weight: Int?,
+    val generation: Int = 1,
     val isFavorite: Boolean = false
 )

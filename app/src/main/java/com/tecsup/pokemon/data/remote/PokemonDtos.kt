@@ -24,6 +24,14 @@ data class PokemonDetailDto(
     @SerializedName("sprites") val sprites: PokemonSpritesDto?
 )
 
+data class PokemonSpeciesDto(
+    @SerializedName("generation") val generation: PokemonGenerationReferenceDto
+)
+
+data class PokemonGenerationReferenceDto(
+    @SerializedName("name") val name: String
+)
+
 data class PokemonTypeSlotDto(
     @SerializedName("type") val type: PokemonTypeNameDto
 )

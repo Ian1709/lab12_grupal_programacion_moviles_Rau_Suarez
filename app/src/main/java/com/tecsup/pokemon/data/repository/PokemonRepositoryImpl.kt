@@ -2,6 +2,7 @@ package com.tecsup.pokemon.data.repository
 
 import com.tecsup.pokemon.data.local.PokemonDao
 import com.tecsup.pokemon.data.mapper.toDomain
+import com.tecsup.pokemon.data.mapper.generationNumber
 import com.tecsup.pokemon.data.mapper.toEntity
 import com.tecsup.pokemon.data.remote.PokemonApiService
 import com.tecsup.pokemon.domain.model.Pokemon
@@ -33,8 +34,9 @@ class PokemonRepositoryImpl(
 
     override suspend fun loadDetails(name: String): Pokemon {
         val details = api.getPokemonDetail(name.trim().lowercase())
+        val generation = api.getPokemonSpecies(details.id).generation.name.generationNumber()
         val currentFavorite = dao.getById(details.id)?.isFavorite ?: false
-        val entity = details.toEntity(currentFavorite)
+        val entity = details.toEntity(currentFavorite, generation)
         dao.upsert(entity)
         return entity.toDomain()
     }

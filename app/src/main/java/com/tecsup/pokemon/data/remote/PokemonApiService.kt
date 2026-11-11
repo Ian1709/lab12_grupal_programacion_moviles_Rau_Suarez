@@ -12,6 +12,9 @@ interface PokemonApiService {
     @GET("pokemon/{name}")
     suspend fun getPokemonDetail(@Path("name") name: String): PokemonDetailDto
 
+    @GET("pokemon-species/{id}")
+    suspend fun getPokemonSpecies(@Path("id") id: Int): PokemonSpeciesDto
+
     companion object {
         private const val BASE_URL = "https://pokeapi.co/api/v2/"
 

@@ -14,6 +14,7 @@ fun PokemonEntity.toDomain(): Pokemon = Pokemon(
     types = types,
     height = height,
     weight = weight,
+    generation = generation,
     isFavorite = isFavorite
 )
 
@@ -24,6 +25,7 @@ fun Pokemon.toEntity(): PokemonEntity = PokemonEntity(
     types = types,
     height = height,
     weight = weight,
+    generation = generation,
     isFavorite = isFavorite
 )
 
@@ -35,16 +37,32 @@ fun PokemonReferenceDto.toEntity(): PokemonEntity {
         imageUrl = "$OFFICIAL_ART_BASE$pokemonId.png",
         types = listOf("fire"),
         height = null,
-        weight = null
+        weight = null,
+        generation = generationFromId(pokemonId)
     )
 }
 
-fun PokemonDetailDto.toEntity(isFavorite: Boolean): PokemonEntity = PokemonEntity(
+fun PokemonDetailDto.toEntity(isFavorite: Boolean, generation: Int): PokemonEntity = PokemonEntity(
     id = id,
     name = name,
     imageUrl = sprites?.other?.officialArtwork?.frontDefault ?: "$OFFICIAL_ART_BASE$id.png",
     types = types.map { it.type.name },
     height = height,
     weight = weight,
+    generation = generation,
     isFavorite = isFavorite
 )
+
+fun generationFromId(id: Int): Int = when (id) {
+    in 1..151 -> 1
+    in 152..251 -> 2
+    in 252..386 -> 3
+    in 387..493 -> 4
+    in 494..649 -> 5
+    in 650..721 -> 6
+    in 722..809 -> 7
+    in 810..905 -> 8
+    else -> 9
+}
+
+fun String.generationNumber(): Int = substringAfterLast('-').toIntOrNull() ?: 1
